@@ -7,11 +7,26 @@ RSpec.describe 'Resource API integrated tests:' do
     let(:definition) do
       {
         name: 'integration',
+        title_patterns: [
+          {
+            pattern: %r{^(?<name>.*[^-])-(?<name2>.*)$},
+            desc: 'Where the name and the name2 are provided with a hyphen separator',
+          },
+          {
+            pattern: %r{^(?<name>.*)$},
+            desc: 'Where only the name is provided',
+          },
+        ],
         attributes: {
           name: {
             type: 'String',
             behaviour: :namevar,
             desc: 'the title',
+          },
+          name2: {
+            type: 'String',
+            behaviour: :namevar,
+            desc: 'the other title',
           },
           string: {
             type: 'String',
@@ -170,7 +185,18 @@ RSpec.describe 'Resource API integrated tests:' do
       s = setter
       Class.new do
         def get(_context)
-          []
+          [
+            {
+              name: 'foo',
+              name2: 'bar',
+              title: 'foo-bar',
+            },
+            {
+              name: 'foo2',
+              name2: 'bar2',
+              title: 'foo2-bar2',
+            },
+          ]
         end
 
         attr_reader :last_changes

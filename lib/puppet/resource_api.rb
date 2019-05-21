@@ -123,6 +123,20 @@ module Puppet::ResourceApi
         title
       end
 
+      def self.build_title(type_definition, resource_hash)
+        if type_definition.namevars.size > 1
+          # use a MonkeyHash to allow searching in Puppet's RAL
+          Puppet::ResourceApi::MonkeyHash[type_definition.namevars.map { |attr| [attr, resource_hash[attr]] }]
+        else
+          resource_hash[type_definition.namevars[0]]
+        end
+      end
+
+      def rsapi_title
+        @rsapi_title ||= self.class.build_title(type_definition, self)
+        @rsapi_title
+      end
+
       def to_resource
         to_resource_shim(super)
       end
@@ -251,7 +265,7 @@ module Puppet::ResourceApi
           result = if resource_hash.key? :title
                      new(title: resource_hash[:title])
                    else
-                     new(title: resource_hash[type_definition.namevars.first])
+                     new(title: build_title(type_definition, resource_hash))
                    end
           result.cache_current_state(resource_hash)
           result
@@ -260,7 +274,7 @@ module Puppet::ResourceApi
 
       define_method(:refresh_current_state) do
         @rsapi_current_state = if type_definition.feature?('simple_get_filter')
-                                 my_provider.get(context, [title]).find { |h| namevar_match?(h) }
+                                 my_provider.get(context, [rsapi_title]).find { |h| namevar_match?(h) }
                                else
                                  my_provider.get(context).find { |h| namevar_match?(h) }
                                end
@@ -269,7 +283,7 @@ module Puppet::ResourceApi
           type_definition.check_schema(@rsapi_current_state)
           strict_check(@rsapi_current_state) if type_definition.feature?('canonicalize')
         else
-          @rsapi_current_state = { title: title }
+          @rsapi_current_state = { title: rsapi_title }
           @rsapi_current_state[:ensure] = :absent if type_definition.ensurable?
         end
       end
