@@ -10,4 +10,7 @@ To start out, install the Puppet Development Kit (PDK), which will provide all n
 
 4. Git is a version control system that helps you keep track of changes and collaborate with others. In the course of the hands-on lab, we will show some integrations with cloud services that can help you. If you never used git before, skip this and all related steps for now.
 
-Continue with [creating a new module](./02-creating-a-new-module.md).
+
+## Next up
+
+Having installed all of this, let's [light up a few](./02-connecting-to-the-lightbulbs.md).
