@@ -16,6 +16,7 @@ RSpec.describe Puppet::ResourceApi do
 
   after(:each) do
     Puppet::Util::Log.close_all
+    Puppet::Util::NetworkDevice.teardown
   end
 
   it 'has a version number' do
@@ -44,6 +45,7 @@ RSpec.describe Puppet::ResourceApi do
     let(:definition) do
       {
         name: type_name,
+        desc: 'a test resource',
         attributes: {
           name: {
             type: 'String',
@@ -747,6 +749,7 @@ RSpec.describe Puppet::ResourceApi do
     let(:definition) do
       {
         name: 'init_behaviour',
+        desc: 'a test resource',
         attributes: {
           ensure: {
             type: 'Enum[present, absent]',
@@ -1172,7 +1175,7 @@ RSpec.describe Puppet::ResourceApi do
     context 'when loading a provider that doesn\'t create the correct class' do
       let(:definition) { { name: 'no_class', attributes: {} } }
 
-      it { expect { described_class.load_provider('no_class') }.to raise_error Puppet::DevError, %r{Puppet::Provider::NoClass::NoClass} }
+      it { expect { described_class.load_provider('no_class') }.to raise_error Puppet::DevError, %r{provider class Puppet::Provider::NoClass::NoClass not found} }
     end
 
     context 'when loading a provider that creates the correct class' do
@@ -1792,6 +1795,7 @@ CODE
     let(:definition) do
       {
         name: 'test_noop_support',
+        desc: 'a test resource',
         features: ['no such feature'],
         attributes: {},
       }
@@ -1808,6 +1812,7 @@ CODE
       let(:definition) do
         {
           name: 'test_behaviour',
+          desc: 'a test resource',
           attributes: {
             id: {
               type: 'String',
@@ -1824,6 +1829,7 @@ CODE
       let(:definition) do
         {
           name: 'test_behaviour',
+          desc: 'a test resource',
           attributes: {
             param: {
               type: 'String',
@@ -1840,6 +1846,7 @@ CODE
       let(:definition) do
         {
           name: 'test_behaviour',
+          desc: 'a test resource',
           attributes: {
             param_ro: {
               type: 'String',
@@ -1856,6 +1863,7 @@ CODE
       let(:definition) do
         {
           name: 'test_behaviour',
+          desc: 'a test resource',
           attributes: {
             param_ro: {
               type: 'String',
@@ -1872,6 +1880,7 @@ CODE
       let(:definition) do
         {
           name: 'test_behaviour',
+          desc: 'a test resource',
           attributes: {
             source: {
               type: 'String',

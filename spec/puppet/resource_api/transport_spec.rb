@@ -36,11 +36,18 @@ RSpec.describe Puppet::ResourceApi::Transport do
 
   describe '#register(schema)' do
     context 'when registering a schema with missing keys' do
-      it { expect { described_class.register([]) }.to raise_error(Puppet::DevError, %r{requires a hash as schema}) }
-      it { expect { described_class.register({}) }.to raise_error(Puppet::DevError, %r{requires a `:name`}) }
-      it { expect { described_class.register(name: 'no connection info', desc: 'some description') }.to raise_error(Puppet::DevError, %r{requires `:connection_info`}) }
-      it { expect { described_class.register(name: 'no description') }.to raise_error(Puppet::DevError, %r{requires `:desc`}) }
-      it { expect { described_class.register(name: 'no hash attributes', desc: 'some description', connection_info: []) }.to raise_error(Puppet::DevError, %r{`:connection_info` must be a hash, not}) }
+      it { expect { described_class.register([]) }.to raise_error(Puppet::DevError, %r{must be a Hash, not `Array`}) }
+      it { expect { described_class.register({}) }.to raise_error(Puppet::DevError, %r{must have a name}) }
+      it { expect { described_class.register(name: 'no connection info', desc: 'some description') }.to raise_error(Puppet::DevError, %r{`no connection info` must have `connection_info`}) }
+      it do
+        expect {
+          described_class.register(name: 'no hash attributes', desc: 'some description', connection_info: [])
+        }.to raise_error(Puppet::DevError, %r{`no hash attributes.connection_info` must be a hash, not `Array})
+      end
+      it 'warns if there is no documentation ' do
+        expect(Puppet).to receive(:warning).with(%r{has no documentation, add it using a `desc` key})
+        described_class.register(name: 'no description', connection_info: {})
+      end
     end
 
     context 'when registering a minimal transport' do
@@ -300,6 +307,7 @@ RSpec.describe Puppet::ResourceApi::Transport do
 
       it 'validates the connection_info' do
         allow(Puppet::ResourceApi::TransportSchemaDef).to receive(:new).with(schema).and_return(schema_def)
+        allow(schema_def).to receive(:name).with(no_args).and_return('validate')
 
         described_class.register(schema)
 
@@ -330,6 +338,7 @@ RSpec.describe Puppet::ResourceApi::Transport do
 
     before(:each) do
       allow(Puppet::ResourceApi::TransportSchemaDef).to receive(:new).with(schema).and_return(schema_def)
+      allow(schema_def).to receive(:name).with(no_args).and_return('sensitive_transport')
       described_class.register(schema)
     end
 

@@ -90,11 +90,27 @@ module Puppet::ResourceApi
       }.keys
     end
 
+    def desc
+      definition[:desc]
+    end
+
     def validate_schema(definition, attr_key)
       raise Puppet::DevError, '%{type_class} must be a Hash, not `%{other_type}`' % { type_class: self.class.name, other_type: definition.class } unless definition.is_a?(Hash)
-      @attributes = definition[attr_key]
       raise Puppet::DevError, '%{type_class} must have a name' % { type_class: self.class.name } unless definition.key? :name
-      raise Puppet::DevError, '%{type_class} must have `%{attr_key}`' % { type_class: self.class.name, attrs: attr_key } unless definition.key? attr_key
+      raise Puppet::DevError, '`%{name}` must have `%{attrs}`' % { name: definition[:name], attrs: attr_key } unless definition.key? attr_key
+
+      # fixup desc/docs backwards compatibility
+      if definition.key? :docs
+        if definition[:desc]
+          raise Puppet::DevError, '`%{name}` has both `desc` and `docs`, prefer using `desc`' % { name: definition[:name] }
+        end
+        definition[:desc] = definition[:docs]
+        definition.delete(:docs)
+      end
+
+      Puppet.warning('`%{name}` has no documentation, add it using a `desc` key' % { name: definition[:name] }) unless definition.key? :desc
+
+      @attributes = definition[attr_key]
       unless attributes.is_a?(Hash)
         raise Puppet::DevError, '`%{name}.%{attrs}` must be a hash, not `%{other_type}`' % {
           name: definition[:name], attrs: attr_key, other_type: attributes.class
@@ -104,7 +120,7 @@ module Puppet::ResourceApi
       attributes.each do |key, attr|
         raise Puppet::DevError, "`#{definition[:name]}.#{key}` must be a Hash, not a #{attr.class}" unless attr.is_a? Hash
         raise Puppet::DevError, "`#{definition[:name]}.#{key}` has no type" unless attr.key? :type
-        Puppet.warning("`#{definition[:name]}.#{key}` has no docs") unless attr.key? :desc
+        Puppet.warning("`#{definition[:name]}.#{key}` has no documentation, add it using a `desc` key") unless attr.key? :desc
 
         # validate the type by attempting to parse into a puppet type
         @data_type_cache[attributes[key][:type]] ||=
