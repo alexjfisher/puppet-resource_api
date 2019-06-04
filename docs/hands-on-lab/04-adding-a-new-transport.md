@@ -4,7 +4,6 @@
 
 Copy the files from [this directory](./04-adding-a-new-transport/) into your new module:
 
-* .sync.yml
 * lib/puppet/transport/hue.rb
 * lib/puppet/transport/schema/hue.rb
 * lib/puppet/util/network_device/hue/device.rb
