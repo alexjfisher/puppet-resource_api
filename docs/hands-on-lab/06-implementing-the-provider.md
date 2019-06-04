@@ -38,7 +38,7 @@ To define the necessary attributes, insert the following snippet into the `attri
     },
     hue:        {
       type:     'Optional[Integer]',
-      desc:     'The hue the light color.',
+      desc:     'The hue light color.',
     },
     sat:        {
       type:     'Optional[Integer]',
